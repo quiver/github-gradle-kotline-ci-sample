@@ -3,9 +3,6 @@ name: gradle_ci_demo
 on:
   workflow_dispatch
 
-env:
-  PROJECT: demo
-
 permissions:
   contents: write
 
