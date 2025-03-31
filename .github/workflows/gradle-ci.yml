@@ -1,0 +1,52 @@
+name: gradle_ci_demo
+
+on:
+  workflow_dispatch
+
+env:
+  PROJECT: demo
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    name: Gradle CI
+    runs-on: ubuntu-24.04
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.13
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/develop' }} # develop のような main/master以外のブランチでもキャッシュ化させる
+
+      - name: Set gradle.properties
+        run: |
+          #echo "org.gradle.caching=false" >> gradle.properties # デフォルトからプロパティを変更させたい場合
+
+      - name: Build project
+        run: |
+          gradle wrapper
+          ./gradlew build --profile
+
+      - name: check default gradle.properties
+        run: |
+          echo "org.gradle.caching: $(./gradlew properties -q)"
+
+      - name: Upload build reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-reports
+          path: build/reports/
