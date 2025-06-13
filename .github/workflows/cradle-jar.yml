@@ -1,0 +1,41 @@
+name: gradle_jar_demo
+
+on:
+  workflow_dispatch
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    name: Gradle CI
+    runs-on: ubuntu-24.04
+
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'corretto'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.13
+
+      - name: Build project
+        run: |
+          gradle wrapper
+          ./gradlew build --profile
+
+
+      - name: Upload build reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: build-reports
+          path: build/reports/
